@@ -1,33 +1,35 @@
 #include "DJI_RS_SDK.h"
 
-uint8_t position_ctrl_byte = 0;
-uint8_t speed_ctrl_byte  = 0;
+uint8_t position_ctrl_byte  = 0;
+uint8_t speed_ctrl_byte     = 0;
 
 void DJIRonin(void){
-    position_ctrl_byte = 0;
-    speed_ctrl_byte = 0;
+    position_ctrl_byte  = 0;
+    speed_ctrl_byte     = 0;
 
     position_ctrl_byte |= BIT1;
-    speed_ctrl_byte |= BIT3;
+    speed_ctrl_byte    |= BIT3;
 }
 
 bool move_to(float yaw_angle, float roll_angle, float pitch_angle, float time_s){
     uint8_t *CMD;
     uint8_t cmd_type = 0x03;
-    uint8_t cmd_set = 0x0E;
-    uint8_t cmd_id = 0x00;
-    int16_t yaw = (int16_t)(yaw_angle * 10);
-    int16_t roll = (int16_t)(roll_angle * 10);
-    int16_t pitch = (int16_t)(pitch_angle * 10);
-    uint8_t time = (uint8_t)(time_s * 10);
+    uint8_t cmd_set  = 0x0E;
+    uint8_t cmd_id   = 0x00;
+    int16_t yaw      = (int16_t)(yaw_angle * 10);
+    int16_t roll     = (int16_t)(roll_angle * 10);
+    int16_t pitch    = (int16_t)(pitch_angle * 10);
+    uint8_t time     = (uint8_t)(time_s * 10);
 
-    if( (18000>= yaw) && (yaw >= -18000) && (3000 >= roll) && (roll >= -3000) && (1460 >= pitch) && (pitch >= -560) )
+    if( (-18000 <= yaw)    && (yaw   <= 18000) &&
+        (-3000  <= roll)   && (roll  <= 3000)  &&
+        (-5600  <= pitch)  && (pitch <= 14600)    )
     {
         uint8_t data_payload[]={
-                ((uint8_t*)&yaw)[0],((uint8_t*)&yaw)[1],
-                ((uint8_t*)&roll)[0],((uint8_t*)&roll)[1],
-                ((uint8_t*)&pitch)[0],((uint8_t*)&pitch)[1],
-                position_ctrl_byte, time
+                ((uint8_t*)&yaw)[0],    ((uint8_t*)&yaw)[1],
+                ((uint8_t*)&roll)[0],   ((uint8_t*)&roll)[1],
+                ((uint8_t*)&pitch)[0],  ((uint8_t*)&pitch)[1],
+                position_ctrl_byte,     time
         };
 
         CMD = Combine(cmd_type,cmd_set,cmd_id,data_payload, sizeof(data_payload));
