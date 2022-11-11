@@ -1,5 +1,5 @@
 #include "CmdCombine.h"
-#include "string.h"
+
 
 /* DJI RS SDK Protocol Description
  *
@@ -22,12 +22,12 @@
  * +------+------+-------+
  */
 
-uint8_t *Combine(uint8_t cmd_type, uint8_t cmd_set, uint8_t cmd_id, uint8_t *data, uint8_t data_lenth){
+uint8_t *Combine(uint8_t cmd_type, uint8_t cmd_set, uint8_t cmd_id, uint8_t *data, uint8_t data_length){
 
-    uint16_t cmd_length = 18 + data_lenth ;// 10byte prefix + 2byte crc16 + (n+2)byte data + 4byte crc32
+    uint16_t cmd_length = 18 + data_length ;// 10byte prefix + 2byte crc16 + (n+2)byte data + 4byte crc32
 
-    uint8_t *SeqNum     = seq_num();                                                                //
-    uint8_t seqnum[2]   = {SeqNum[0],SeqNum[1]};                                          //
+    uint8_t *SeqNum     = seq_num();                                                             //
+    uint8_t seqnum[2]   = {SeqNum[0],SeqNum[1] };                                        //
     free(SeqNum);
 
     int i  = 0;
@@ -35,7 +35,7 @@ uint8_t *Combine(uint8_t cmd_type, uint8_t cmd_set, uint8_t cmd_id, uint8_t *dat
 
 
     cmd[i] = 0xAA;                       i++;//SOF                                              //帧头           固定值0xAA
-    cmd[i] = ((uint8_t*)&cmd_length)[0]; i++;                                                   //帧长度和版本号   [9:0]bit为帧长度；[15:10]bit为版本号，一般为0
+    cmd[i] = ((uint8_t*)&cmd_length)[0]; i++;                                                   //帧长度和版本号
     cmd[i] = ((uint8_t*)&cmd_length)[1]; i++;
     cmd[i] = cmd_type;                   i++;                                                   //指令类型
     cmd[i] = 0x00;                       i++; // enc                                            //加密类型
@@ -54,7 +54,7 @@ uint8_t *Combine(uint8_t cmd_type, uint8_t cmd_set, uint8_t cmd_id, uint8_t *dat
     cmd[i] = cmd_set;                    i++; // crc16 [0:1]
     cmd[i] = cmd_id;                     i++; // crc16 [0:1]
 
-    for (size_t j = 0; j < data_lenth; j++)
+    for (size_t j = 0; j < data_length; j++)
     {
         cmd[i] = data[j];                i++;                                                    //write CmdData byte  写指令字节
     }

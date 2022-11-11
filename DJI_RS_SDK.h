@@ -2,8 +2,12 @@
 #define DJI_RS_SDK_H
 #include "CmdCombine.h"
 #include "Handle.h"
+
 #include "stdbool.h"
-#include "stdio.h"
+#include "string.h"
+
+#include "main.h"
+#include "can.h"
 
 
 

@@ -4,6 +4,9 @@ uint8_t position_ctrl_byte  = 0;
 uint8_t speed_ctrl_byte     = 0;
 
 void DJIRonin(void){
+    HAL_CAN_Start(&hcan1);
+    CanTX_Init();
+
     position_ctrl_byte  = 0;
     speed_ctrl_byte     = 0;
 
@@ -16,14 +19,12 @@ bool move_to(float yaw_angle, float roll_angle, float pitch_angle, float time_s)
     uint8_t cmd_type = 0x03;
     uint8_t cmd_set  = 0x0E;
     uint8_t cmd_id   = 0x00;
-    int16_t yaw      = (int16_t)(yaw_angle * 10);
-    int16_t roll     = (int16_t)(roll_angle * 10);
+    int16_t yaw      = (int16_t)(yaw_angle   * 10);
+    int16_t roll     = (int16_t)(roll_angle  * 10);
     int16_t pitch    = (int16_t)(pitch_angle * 10);
-    uint8_t time     = (uint8_t)(time_s * 10);
+    uint8_t time     = (uint8_t)(time_s      * 10);
 
-    if( (-18000 <= yaw)    && (yaw   <= 18000) &&
-        (-3000  <= roll)   && (roll  <= 3000)  &&
-        (-5600  <= pitch)  && (pitch <= 14600)    )
+    if( (-1800 <= yaw) && (yaw <= 1800) && (-300 <= roll) && (roll <= 300) && (-560 <= pitch) && (pitch <= 1460) )
     {
         uint8_t data_payload[]={
                 ((uint8_t*)&yaw)[0],    ((uint8_t*)&yaw)[1],
@@ -34,17 +35,17 @@ bool move_to(float yaw_angle, float roll_angle, float pitch_angle, float time_s)
 
         CMD = Combine(cmd_type,cmd_set,cmd_id,data_payload, sizeof(data_payload));
         uint8_t CombineCMD[CMD[1]];
+
         for (int i = 0; i < CMD[1]; i++) {
             CombineCMD[i] = CMD[i];
         }
+
         free(CMD);
 
-        for (int i = 0; i < sizeof(CombineCMD); i++) {
-            printf("%x\t",CombineCMD[i]);
-        }
-
-        if( true )
+        if(send_data(CombineCMD, sizeof(CombineCMD)) )
             return true;
+        else
+            return false;
     }
     else
         return false;
@@ -89,11 +90,11 @@ bool set_move_mode(enum MoveMode type){
 bool set_speed(int16_t yaw, int16_t roll, int16_t pitch){
     uint8_t *CMD;
     uint8_t cmd_type = 0x03;
-    uint8_t cmd_set = 0x0E;
-    uint8_t cmd_id = 0x01;
+    uint8_t cmd_set  = 0x0E;
+    uint8_t cmd_id   = 0x01;
     uint8_t data_payload[]={
-            ((uint8_t*)&yaw)[0],((uint8_t*)&yaw)[1],
-            ((uint8_t*)&roll)[0],((uint8_t*)&roll)[1],
+            ((uint8_t*)&yaw)[0],  ((uint8_t*)&yaw)[1],
+            ((uint8_t*)&roll)[0], ((uint8_t*)&roll)[1],
             ((uint8_t*)&pitch)[0],((uint8_t*)&pitch)[1],
             speed_ctrl_byte
     };
@@ -106,11 +107,7 @@ bool set_speed(int16_t yaw, int16_t roll, int16_t pitch){
     }
     free(CMD);
 
-    for (int i = 0; i < sizeof(CombineCMD); i++) {
-        printf("%x\t",CombineCMD[i]);
-    }
-
-    if( 1)
+    if(send_data(CombineCMD, sizeof(CombineCMD)) )
         return true;
     else
         return false;

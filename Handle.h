@@ -1,6 +1,10 @@
 #ifndef HANDLE_H
 #define HANDLE_H
-#include "CmdCombine.h"
-void send_data(uint8_t *data);
+#include "DJI_RS_SDK.h"
+#include "stdint.h"
+#include "can.h"
+
+void CanTX_Init();
+uint32_t send_data(uint8_t *data, uint8_t data_len);
 
 #endif //HANDLE_H
