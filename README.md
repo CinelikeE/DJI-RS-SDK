@@ -39,5 +39,4 @@ The source of DJI RS SDK to control DJI RS2/RS3 Pro stabilizer on STM32 with HAL
     创建一个线程，发送CAN数据。设备 can1已经在Handle.c中自动打开，**不要第二次打开CAN1！！**
 
 
-**PS:  Because DJI Ronin S isn't support DJI_RS_SDK, and I only have Ronin S, I can't check the data on Can Bus is right at present.**
 **PS： 因为手上只有如影S而且如影S并不支持DJI RS SDK，目前尚不能确认can总线上所发的数据是否正确。**
