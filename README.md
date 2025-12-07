@@ -1,4 +1,4 @@
-# DJI-Ronin-SDK For RT Thread Ver1.0
+# DJI-RS-SDK For RT Thread Ver1.0
 
 #### Overview
 
