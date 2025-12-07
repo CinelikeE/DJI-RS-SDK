@@ -14,6 +14,7 @@ Ver1.0 版本：修改DJI_RS_SDK.c中的实现，优化Combine.c中逻辑
 删除了Ver0中的RTT版本，保留STM32HAL Ver0 版本
 
 保留HAL版本Ver0原因：
+
 1、当时写HAL版本的时候发现can邮箱一次只能缓冲约3帧can数据，需要进行延时等待can邮箱清空
 
 2、RTT接管了内存管理，由于使用了大量指针并且频繁malloc free，rtt中函数为rt_malloc()和rt_free()，懒得改×1
