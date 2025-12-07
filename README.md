@@ -3,7 +3,7 @@
 #### Overview
 
 
-在用RT-Thread OS上控制大疆RS2/RS3 Pro 稳定器的DJI RS SDK源代码，用C重新实现参考项目https://github.com/ConstantRobotics/DJIR_SDK用C++的实现
+在用RT-Thread OS上控制大疆RS2/RS3 Pro 稳定器的DJI RS SDK源代码，用C重新实现参考项目 https://github.com/ConstantRobotics/DJIR_SDK  用C++的实现
 
 Ver1.0 版本：修改DJI_RS_SDK.c中的实现，优化Combine.c中逻辑
 
