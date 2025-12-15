@@ -5,11 +5,10 @@
 
 在用RT-Thread OS上控制大疆RS2/RS3 Pro 稳定器的DJI RS SDK源代码，用C重新实现参考项目 https://github.com/ConstantRobotics/DJIR_SDK  用C++的实现
 
-Ver1.0 版本：修改DJI_RS_SDK.c中的实现，优化Combine.c中逻辑
+Ver1.0.1 版本：已成功运行控制RS2，待添加指令解析环节
 
-开发板为RT Thread官方开发板HMI-Board，mcu为瑞萨Renesas RA6M3 ，RTT中打开HW can filter时can总线无法打开，之前版本使用stm32时可以正常打开
+开发板为RT Thread官方开发板HMI-Board，mcu为瑞萨Renesas RA6M3 ，RTT中打开HW can filter时can总线无法打开，之前版本使用stm32时可以正常打开，建议使用stm32
 
-待验证是否能够控制DJI RS2，若成功将继续完善API（写完代码验证发出字符后发现手上没有杜邦线）
 
 删除了Ver0中的RTT版本，保留STM32HAL Ver0 版本
 
@@ -32,6 +31,6 @@ ps3、（RT Thread的兼容性似乎对cortexM和riscV较好，但个人体验�
     
 2. 引用DJI Ronin()，但目前来说这个函数似乎没有用。。。
     
-3. 创建一个线程，发送CAN数据。设备 can1已经在Handle.c中自动打开，**不要第二次打开同一条CAN！！**
+3. 创建一个线程，发送CAN数据。（这里存在一个问题，外设初始化和功能逻辑的有些杂糅，但目前似乎没有更好能模块化或者分开的方法）
 
 
