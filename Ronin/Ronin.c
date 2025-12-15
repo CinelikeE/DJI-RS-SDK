@@ -87,10 +87,14 @@ void CanTx(){
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
     rt_thread_mdelay(1000);
+    float i = 0;
     while (1)
     {
-        if( move_to(3.2f, 4.8f, 6.4f, 2.0f) )
-        rt_thread_delay(10000);
+        if( move_to(120, 0, 0, 2.0f) )
+
+        rt_thread_delay(5000);
+        if( move_to(-120, 0, 0, 2.0f) )
+        rt_thread_delay(5000);
         rt_kprintf("\r\n");
     }
 #pragma clang diagnostic pop
@@ -100,7 +104,7 @@ int CanT_Init(){
     rt_thread_t tid3 = RT_NULL;
 
     rt_thread_delay(1000);
-    tid3 = rt_thread_create("CanTX", CanTx, RT_NULL, 1024, 11, 10);
+    tid3 = rt_thread_create("can_tx", CanTx, RT_NULL, 1024, 11, 10);
     if(tid3 != RT_NULL)
         rt_thread_startup(tid3);
 
