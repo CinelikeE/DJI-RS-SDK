@@ -3,10 +3,11 @@
 //#define Can_Mode_Loopback
 
 #define CAN_DEV_NAME "can0"
+#define CAN_MQ_MSG_NUM 20  // 消息队列容量
 
 static struct rt_semaphore rx_sem;
 static rt_device_t can_dev;
-
+rt_mq_t can_rx_mq;  // 消息队列句柄
 
 static rt_err_t can_rx_call(rt_device_t dev, rt_size_t size)
 {
@@ -21,6 +22,7 @@ static void can_rx_thread(void *parameter)
     int i;
     rt_err_t res;
     struct rt_can_msg rxmsg = {0};
+    CanMsg mq_msg;  // 用于消息队列的消息
 
     /* 设置接收回调函数 */
     rt_device_set_rx_indicate(can_dev, can_rx_call);
@@ -50,15 +52,17 @@ static void can_rx_thread(void *parameter)
 
 
 
-        /* 打印数据 ID 及内容 */
         if( rxmsg.id == 0x222){
-        rt_kprintf("ID:%x---", rxmsg.id);
-        for (i = 0; i < 8; i++)
-        {
-            rt_kprintf("%2x ", rxmsg.data[i]);
-        }
 
-        rt_kprintf("\n");
+        // 填充消息队列数据
+        mq_msg.id = rxmsg.id;
+        mq_msg.len = rxmsg.len;
+        rt_memcpy(mq_msg.data, rxmsg.data, rxmsg.len);
+        // 发送到消息队列，非阻塞方式
+        rt_mq_send(can_rx_mq, &mq_msg, sizeof(CanMsg));
+
+
+
         }
     }
 }
@@ -80,8 +84,19 @@ int rt_Can_init(){
         return RT_ERROR;
     }
 
+    // 初始化消息队列
+    can_rx_mq = rt_mq_create("can_rx_mq",
+                             sizeof(CanMsg),
+                             CAN_MQ_MSG_NUM,
+                             RT_IPC_FLAG_PRIO);
+    if (can_rx_mq == RT_NULL)
+    {
+        rt_kprintf("create can rx mq failed!\n");
+        return RT_ERROR;
+    }
 
-    rt_sem_init(&rx_sem, "rx_sem", 0, RT_IPC_FLAG_FIFO);
+
+    rt_sem_init(&rx_sem, "rx_sem", 0, RT_IPC_FLAG_PRIO);
 
 
     res = rt_device_open(can_dev, RT_DEVICE_FLAG_INT_TX | RT_DEVICE_FLAG_INT_RX);
