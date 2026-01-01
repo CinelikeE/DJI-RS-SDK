@@ -52,7 +52,7 @@ static void can_rx_thread(void *parameter)
 
 
 
-        if( rxmsg.id == 0x222){
+        if( (rxmsg.id == 0x222)||(rxmsg.id == 0x223) ){
 
         // 填充消息队列数据
         mq_msg.id = rxmsg.id;

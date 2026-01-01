@@ -49,7 +49,7 @@ uint8_t *Combine(uint8_t cmd_type, uint8_t cmd_set, uint8_t cmd_id, uint8_t *dat
 
     cmd[i] = cmd_type;                   i++;
 
-    cmd[i] = 0x00;                       i++; // enc                                            //编码
+    cmd[i] = ENC;                       i++; // enc                                            //编码
 
     cmd[i] = 0x00;                       i++; // res1                                           //保留位
     cmd[i] = 0x00;                       i++; // res2

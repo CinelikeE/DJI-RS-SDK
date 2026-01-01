@@ -1,11 +1,37 @@
 #ifndef DJI_RS_SDK_H
 #define DJI_RS_SDK_H
+#include "rtthread.h"
 #include "CmdCombine.h"
 #include "Handle.h"
-//#include "CmdDetach.h"
+
 
 #include "stdbool.h"
 #include "string.h"
+
+
+uint8_t ENC;
+
+uint8_t DJI_RS_SDK_Ver;
+
+uint8_t CmdType;
+enum Response{
+    NoResponse   = 0,
+    Response     = 1,
+    MustResponse = 2
+};
+
+enum FrameType{
+    CommandFrame  = 0,
+    ResponseFrame = 1
+};
+
+
+uint8_t ENC;
+
+enum enc{
+    NoEnc  = 0,
+    AES256 = 1
+};
 
 
 

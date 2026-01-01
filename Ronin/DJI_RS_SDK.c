@@ -4,12 +4,16 @@ uint8_t position_ctrl_byte  = 0x00;  // 位置控制标志位
 uint8_t speed_ctrl_byte     = 0x00;  // 速度控制标志位
 
 
+
 // 初始化函数
 void DJIRonin() {
     position_ctrl_byte = 0x00;  // 初始化为绝对模式
     position_ctrl_byte |= BIT1; // 默认绝对位置控制
     speed_ctrl_byte = 0x00;     // 初始禁用速度控制
-    speed_ctrl_byte |= BIT3;    // 默认禁用焦距影响
+    speed_ctrl_byte |= BIT3 ;    // 默认禁用焦距影响
+
+    ENC = 0x00;
+
 }
 int DJIRonin_Init(){
     rt_thread_t tid3 = RT_NULL;
@@ -19,7 +23,7 @@ int DJIRonin_Init(){
         rt_thread_startup(tid3);
 
     return RT_EOK;
-}INIT_APP_EXPORT(DJIRonin_Init);
+}INIT_BOARD_EXPORT(DJIRonin_Init);
 
 bool move_to(float yaw_angle, float roll_angle, float pitch_angle, float time_s){
 

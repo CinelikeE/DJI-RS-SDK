@@ -4,6 +4,7 @@
 #include "custom_crc16.h"
 #include "custom_crc32.h"
 #include "handle.h"
+#include "ipc/ringbuffer.h"
 
 // 帧解析状态枚举
 typedef enum {
@@ -15,10 +16,11 @@ typedef enum {
 
 // 帧缓冲区结构体
 typedef struct {
-    uint8_t buffer[256];  // 最大帧长
-    uint16_t len;         // 当前已接收长度
+    uint8_t buffer[255];  // 最大帧长
+    uint8_t len;         // 当前已接收长度
+    uint8_t len_max;
     FrameParseState state; // 解析状态
-} FrameBuffer;
+} Buffer;
 
 void Parse();
 
