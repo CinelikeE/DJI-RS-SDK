@@ -1,7 +1,7 @@
 #include "DJI_RS_SDK.h"
 
-uint8_t position_ctrl_byte  = 0x00;  // 位置控制标志位
-uint8_t speed_ctrl_byte     = 0x00;  // 速度控制标志位
+#define RS_RESPONSE_TIMEOUT 2000
+
 
 
 
@@ -12,49 +12,75 @@ void DJIRonin() {
     speed_ctrl_byte = 0x00;     // 初始禁用速度控制
     speed_ctrl_byte |= BIT3 ;    // 默认禁用焦距影响
 
-    ENC = 0x00;
+    Enc_Set(NoEnc);
+    CmdType_Set(MustResponse, CommandFrame);
+
+
 
 }
-int DJIRonin_Init(){
-    rt_thread_t tid3 = RT_NULL;
 
-        tid3 = rt_thread_create("DJIRonin_Init", DJIRonin, RT_NULL, 1024, 11, 10);
-    if(tid3 != RT_NULL)
-        rt_thread_startup(tid3);
 
-    return RT_EOK;
-}INIT_BOARD_EXPORT(DJIRonin_Init);
+/**
+ * @brief move_to 手持云台位置控制（文档第五页，2.3.4.1章节）
+ * @param yaw_angle   航向轴角度，精度0.1°（范围 -180° ~ +180°）
+ * @param roll_angle  横滚轴角度，精度0.1°（范围 -180° ~ +180°）
+ * @param pitch_angle 俯仰轴角度，精度0.1°（范围 -90° ~ +90°）
+ * @param time_s      执行速度,   精度0.1秒。设置手持云台运动速度
+ * @return 应答帧返回码：
+ *         EXECUTION_SUCCESSFUL = 0,执行成功
+ *         PARSE_ERROR = 1 解析错误
+ *         EXECUTION_FAILS = 2执行失败
+ *         UNDEFINED_ERROR = 0xFF 未定义错误
+ *         RS_TIMEOUT = 3   超时
+ *         RS_ERROR   = 4   moveto函数执行失败
+ */
+uint8_t move_to(float yaw_angle, float roll_angle, float pitch_angle, float time_s){
+    RS_Msg msg;
+    rt_err_t res;
+    uint8_t Seq[2] = {0}; // 初始化SEQ，避免随机值
+    uint8_t ret_code = 0xFF; // 默认返回错误码
+    rt_tick_t start_tick = rt_tick_get(); // 记录循环开始时间
 
-bool move_to(float yaw_angle, float roll_angle, float pitch_angle, float time_s){
-
-    int16_t yaw = (int16_t)(yaw_angle * 10);
-    int16_t roll = (int16_t)(roll_angle * 10);
-    int16_t pitch = (int16_t)(pitch_angle * 10);
-    uint8_t time = (uint8_t)(time_s * 10);
-
-    if (!(yaw >= -1800 && yaw <= 1800 &&
-          roll >= -300 && roll <= 300 &&  // 横滚限制更严格
-          pitch >= -560 && pitch <= 1460 &&  // 俯仰范围
-          time >= 1)) {  // 最小时间0.1s
-        rt_kprintf("Error!! DJI_RS_SDK.c Function: moveto overflow!\n");
-        return false;
+    // 第一步：校验moveto调用是否成功（指令是否发送出去）
+    if (!moveto(Seq, yaw_angle, roll_angle, pitch_angle, time_s)) {
+        rt_kprintf("move_to: moveto call failed (param error/send failed)\n");
+        return RS_ERROR; // 返回自定义错误码
     }
 
-    // 数据载荷 (小端模式)
-    uint8_t data_payload[] = {
-        yaw & 0xFF,        (yaw >> 8) & 0xFF,   // Yaw：低字节→高字节（小端）
-        roll & 0xFF,       (roll >> 8) & 0xFF,  // Roll：低字节→高字节（小端）
-        pitch & 0xFF,      (pitch >> 8) & 0xFF, // Pitch：低字节→高字节（小端）
-        position_ctrl_byte,                     // 控制标志位
-        time                                    // 执行时间
-    };
 
-    uint8_t* cmd = Combine(0x03, 0x0E, 0x00, data_payload, sizeof(data_payload));
-    if (!cmd) return false;
+    // 第二步：带超时的应答帧匹配循环
+    while (1) {
+        // 检查是否超时（超过5秒则退出）
+        if (rt_tick_get() - start_tick > RT_TICK_PER_SECOND * (RS_RESPONSE_TIMEOUT/1000)) {
+            rt_kprintf("move_to: response timeout (SEQ: %02X%02X)\n", Seq[0], Seq[1]);
+            return RS_TIMEOUT; // 超时错误码
+        }
 
-    bool ret = send_data(cmd, cmd[1]);  // cmd[1]是帧长度
-    rt_free(cmd);
-    return ret;
+        // 非阻塞接收（每次等待100ms，避免永久阻塞）
+        res = rt_mq_recv(rs_res_mq, &msg, sizeof(RS_Msg), 100);
+
+        // 仅处理接收成功的情况
+        if ((res != RT_ERROR)||(res != RT_ETIMEOUT)) {
+            // 匹配目标SEQ
+            if (msg.seq[0] == Seq[0] && msg.seq[1] == Seq[1]) {
+                ret_code = msg.data[0];
+                //rt_kprintf("move_to: success, return code: %02X (SEQ: %02X%02X)\n", ret_code, Seq[0], Seq[1]);
+                return ret_code;
+            } else {
+                // 非目标SEQ，继续循环
+                //rt_kprintf("move_to: ignore unmatched SEQ: %02X%02X\n", Seq[0], msg.seq[1]);
+            }
+        }
+        // 处理接收错误/超时（继续循环，直到总超时）
+        else if (res == RT_ETIMEOUT) {
+            continue;
+        }
+        else {
+            rt_kprintf("move_to: mq recv error: %d\n", res);
+            return RS_ERROR;
+        }
+    }
+
 
 }
 

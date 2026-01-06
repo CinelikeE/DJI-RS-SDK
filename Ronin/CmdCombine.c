@@ -42,30 +42,30 @@ uint8_t *Combine(uint8_t cmd_type, uint8_t cmd_set, uint8_t cmd_id, uint8_t *dat
     uint8_t *cmd = (uint8_t*) rt_malloc(cmd_length);                                            //帧长度
 
 
-    cmd[i] = 0xAA;                       i++;//SOF
+    cmd[0] = SOF;                        //SOF
 
-    cmd[i] = cmd_length;                 i++;                                                   //根据文档这里是uint16_t，前10bit是帧长度，由于现阶段很难超过256字节偷懒只用前8bit
-    cmd[i] = 0x00;                       i++;
+    cmd[1] = cmd_length;                                                                     //根据文档这里是uint16_t，前10bit是帧长度，由于现阶段很难超过256字节偷懒只用前8bit
+    cmd[2] = 0x00;
 
-    cmd[i] = cmd_type;                   i++;
+    cmd[3] = cmd_type;
 
-    cmd[i] = ENC;                       i++; // enc                                            //编码
+    cmd[4] = enc;                         // enc                                            //编码
 
-    cmd[i] = 0x00;                       i++; // res1                                           //保留位
-    cmd[i] = 0x00;                       i++; // res2
-    cmd[i] = 0x00;                       i++; // res3
+    cmd[5] = 0x00;                        // res1                                           //保留位
+    cmd[6] = 0x00;                        // res2
+    cmd[7] = 0x00;                        // res3
 
-    cmd[i] = seqnum[0];                  i++; // seqnum [1:]                                    //序列号
-    cmd[i] = seqnum[1];                  i++; // seqnum [0:1]
+    cmd[8] = seqnum[0];                   // seqnum [1:]                                    //序列号
+    cmd[9] = seqnum[1];                   // seqnum [0:1]
 
 
     crc16  = crc16_init();
-    crc16  = crc16_update(crc16, cmd,i);
+    crc16  = crc16_update(crc16, cmd, 10);
     crc16  = crc16_finalize(crc16);                                                             //crc16校验
-    cmd[i] = (crc16 & 0xff);             i++;
-    cmd[i] = ((crc16 >> 8) & 0xff);      i++;
-    cmd[i] = cmd_set;                    i++;
-    cmd[i] = cmd_id;                     i++;
+    cmd[10] = (crc16 & 0xff);
+    cmd[11] = ((crc16 >> 8) & 0xff);
+    cmd[12] = cmd_set;
+    cmd[13] = cmd_id;                     i = 14;
 
     for (size_t j = 0; j < data_length; j++)
     {
@@ -83,15 +83,15 @@ uint8_t *Combine(uint8_t cmd_type, uint8_t cmd_set, uint8_t cmd_id, uint8_t *dat
     cmd[i] = ((crc32 >> 16) & 0xff);     i++;
     cmd[i] = ((crc32 >> 24) & 0xff);
 
-        i  = 0;
+
     return cmd;
 }
 
 
 void seq_num(uint8_t *seq_out) {
-    static uint16_t Seq_Init_Data = 0x2210;
-    if (Seq_Init_Data >= 0xFFF0) {
-        Seq_Init_Data = 0x0002;
+    static uint16_t Seq_Init_Data = 0;
+    if (Seq_Init_Data >= 0xFFFF) {
+        Seq_Init_Data = 0x00;
     }
     Seq_Init_Data++;
     seq_out[0] = ((uint8_t*)&Seq_Init_Data)[1];

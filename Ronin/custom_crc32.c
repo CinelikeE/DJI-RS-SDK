@@ -72,7 +72,7 @@ crc32_t crc32_update(crc32_t crc, const void *data, size_t data_len)
 }
 
 
-
+/*
 #include <stdio.h>
 #include <getopt.h>
 #include <stdbool.h>
@@ -141,7 +141,7 @@ static void print_crc32_params(void)
     printf(format, "crc_mask", (unsigned long long int)0xffffffff);
     printf(format, "msb_mask", (unsigned long long int)0x80000000);
 }
-
+*/
 
 /**
  * C main function.
@@ -150,6 +150,7 @@ static void print_crc32_params(void)
  * \retval 0 on success.
  * \retval >0 on error.
  */
+/*
 int main32(int argc, char *argv[])
 {
     crc32_t crc;
@@ -165,3 +166,4 @@ int main32(int argc, char *argv[])
     printf("0x%llx\n", (unsigned long long int)crc);
     return 0;
 }
+*/

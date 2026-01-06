@@ -3,35 +3,27 @@
 #include "rtthread.h"
 #include "CmdCombine.h"
 #include "Handle.h"
+#include "DJI_RS_Set.h"
+#include "FrameTransmit.h"
+#include "CmdParse.h"
 
 
 #include "stdbool.h"
 #include "string.h"
 
+enum ErrorCode {
+    RS_TIMEOUT = 0x03,
+    RS_ERROR   = 0x04
+};
 
-uint8_t ENC;
+
 
 uint8_t DJI_RS_SDK_Ver;
 
-uint8_t CmdType;
-enum Response{
-    NoResponse   = 0,
-    Response     = 1,
-    MustResponse = 2
-};
-
-enum FrameType{
-    CommandFrame  = 0,
-    ResponseFrame = 1
-};
 
 
-uint8_t ENC;
 
-enum enc{
-    NoEnc  = 0,
-    AES256 = 1
-};
+
 
 
 
@@ -47,11 +39,7 @@ enum  FLAG  {
 };
 
 
-enum ReturnCode {
-    EXECUTION_SUCCESSFUL = 0,
-    PARSE_ERROR = 1,
-    EXECUTION_FAILS = 2
-};
+
 
 enum AxisType {
         YAW = 0,
@@ -87,15 +75,8 @@ bool connect();
  */
 bool disconnect();
 
-/**
- * @brief move_to - Handheld Gimbal Position Control (p.5, 2.3.4.1)  -手持云台位置控制（文档第五页，2.3.4.1章节）
- * @param yaw_angle Unit: 1° accuracy: 0.1° (range: -1800 to +1800) -单位值1° 精度0.1°（范围 -1800° ~ +1800°）
- * @param roll_angle Unit: 1° accuracy: 0.1° (range: -1800 to +1800) -单位值1° 精度0.1°（范围 -1800° ~ +1800°）
- * @param pitch_angle  Unit: 1° accuracy: 0.1° (range: -90 to +90) -单位值1° 精度0.1°（范围 -90° ~ +90°）
- * @param time_s Command execution speed, unit: s. Min value is 0.1s. Time is used to set motion speed when gimbal is executing this command.  -命令执行速度 单位值1秒 精度0.1秒。用于设置手持云台运动速度
- * @return True if success
- */
-bool move_to(float yaw_angle, float roll_angle, float pitch_angle, float time_s);
+
+uint8_t move_to(float yaw_angle, float roll_angle, float pitch_angle, float time_s);
 
 /**
  * @brief set_inverted_axis - Handheld Gimbal Position Control (p.5, 2.3.4.1)

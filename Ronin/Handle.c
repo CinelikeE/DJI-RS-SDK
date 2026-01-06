@@ -1,6 +1,9 @@
 #include "Handle.h"
 
-//#define Can_Mode_Loopback
+
+#ifdef debug
+#define Can_Mode_Loopback
+#endif
 
 #define CAN_DEV_NAME "can0"
 #define CAN_MQ_MSG_NUM 20  // 消息队列容量
