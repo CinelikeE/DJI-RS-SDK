@@ -13,6 +13,14 @@
  *  - ReflectOut    = True
  *  - Algorithm     = table-driven
  */
+/**
+ * @file custom_crc32.c
+ * @brief CRC32 校验模块实现
+ *
+ * 查表法实现：以“当前 CRC 与数据字节异或后的低字节”查表，
+ * 与“CRC 右移 8 位”异或得到新 CRC。表由 pycrc 预先计算。
+ * 文件中部被注释掉的代码为 pycrc 生成的独立测试程序，固件中未使用。
+ */
 #include "custom_crc32.h"     /* include the header file generated with pycrc */
 #include <stdlib.h>
 #include <stdint.h>
@@ -21,6 +29,7 @@
 
 /**
  * Static table used for the table_driven implementation.
+ * 查表法使用的 CRC32 查找表（256 项，由 pycrc 生成）。
  */
 static const crc32_t crc32_table[256] = {
         0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f, 0xe963a535, 0x9e6495a3,
@@ -64,11 +73,11 @@ crc32_t crc32_update(crc32_t crc, const void *data, size_t data_len)
     unsigned int tbl_idx;
 
     while (data_len--) {
-        tbl_idx = (crc ^ *d) & 0xff;
-        crc = (crc32_table[tbl_idx] ^ (crc >> 8)) & 0xffffffff;
-        d++;
+        tbl_idx = (crc ^ *d) & 0xff;                        /* 取当前 CRC 与数据字节异或的低 8 位作为表索引 */
+        crc = (crc32_table[tbl_idx] ^ (crc >> 8)) & 0xffffffff; /* 查表值与 CRC 高位移位异或 */
+        d++;                                                /* 指向下一个数据字节 */
     }
-    return crc & 0xffffffff;
+    return crc & 0xffffffff;                                /* 掩码到 32 位后返回 */
 }
 
 

@@ -37,6 +37,17 @@
  * crc = crc_finalize(crc);
  * \endcode
  */
+/**
+ * @file custom_crc32.h
+ * @brief CRC32 校验模块（头文件）
+ *
+ * 由 pycrc 生成，采用查表法实现，算法参数：
+ *  宽度 32、多项式 0x04c11db7、初始值 0xc55c0000、
+ *  输入/输出反射、异或输出 0x00000000。
+ * 用于 DJI RS 协议帧尾部 CRC32 字段校验。
+ *
+ * 使用方法：crc32_init() -> crc32_update()（可多次）-> crc32_finalize()。
+ */
 #ifndef CUSTOM_CRC32_H
 #define CUSTOM_CRC32_H
 

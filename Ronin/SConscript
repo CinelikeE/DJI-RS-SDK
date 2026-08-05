@@ -1,0 +1,12 @@
+# -*- coding: utf-8 -*-
+# RT-Thread 构建脚本：把本目录下所有 .c 文件编译进 DJI_RS_SDK 组件，
+# 并添加本目录到头文件搜索路径。仅在使能 BSP_USING_CAN 时参与构建。
+from building import *
+
+cwd = GetCurrentDir()
+src = Glob('*.c')      # 收集本目录所有 C 源文件
+CPPPATH = [cwd]        # 头文件搜索路径包含本目录
+
+group = DefineGroup('DJI_RS_SDK', src, depend = ['BSP_USING_CAN'], CPPPATH = CPPPATH)
+
+Return('group')

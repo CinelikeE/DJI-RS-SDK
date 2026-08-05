@@ -1,54 +1,42 @@
-/*
- * Copyright (c) 2006-2021, RT-Thread Development Team
+/**
+ * @file FrameTransmit.c
+ * @brief DJI RS 命令帧发送实现
  *
- * SPDX-License-Identifier: Apache-2.0
- *
- * Change Logs:
- * Date           Author       Notes
- * 2026-01-03     CinelikeE       the first version
+ * rs_send_cmd() 先调用 Combine() 合成完整协议帧，再通过 CAN 总线发送；
+ * 若调用方需要等待应答，可传入 seq_out 保存帧序列号，用于后续匹配应答帧。
  */
 #include "FrameTransmit.h"
 
+/**
+ * @brief 通用命令帧发送（不等待应答）
+ * @param cmd_set  命令集（如 0x0E 云台、0x0D 相机）
+ * @param cmd_id   命令 ID
+ * @param data     命令数据区（可为空）
+ * @param data_len 命令数据长度
+ * @param seq_out  可选：回填本帧序列号（2 字节），用于之后匹配应答帧
+ * @return true=发送成功，false=失败
+ */
+bool rs_send_cmd(uint8_t cmd_set, uint8_t cmd_id, uint8_t *data, uint16_t data_len, uint8_t *seq_out)
+{
+    uint8_t *cmd;
+    bool ret = false;
 
-bool moveto(uint8_t *seq ,float yaw_angle, float roll_angle, float pitch_angle, float time_s){
+    /* 1. 合成完整协议帧（内部申请内存） */
+    cmd = Combine(CmdType, cmd_set, cmd_id, data, data_len);
+    if (cmd == RT_NULL)
+        return false;
 
-    bool ret = false; // 初始化返回值，避免随机值
-
-    int16_t yaw = (int16_t)(yaw_angle * 10);
-    int16_t roll = (int16_t)(roll_angle * 10);
-    int16_t pitch = (int16_t)(pitch_angle * 10);
-    uint8_t time = (uint8_t)(time_s * 10);
-
-    if (!(yaw >= -1800 && yaw <= 1800 &&
-          roll >= -300 && roll <= 300 &&  // 横滚限制更严格
-          pitch >= -560 && pitch <= 1460 &&  // 俯仰范围
-          time >= 1)) {  // 最小时间0.1s
-        rt_kprintf("Error!! FrameTransmit.c Function: moveto overflow!\n");
-        return RT_ERROR;
-    }
-
-    // 数据载荷 (小端模式)
-    uint8_t data_payload[] = {
-        yaw & 0xFF,        (yaw >> 8) & 0xFF,   // Yaw：低字节→高字节（小端）
-        roll & 0xFF,       (roll >> 8) & 0xFF,  // Roll：低字节→高字节（小端）
-        pitch & 0xFF,      (pitch >> 8) & 0xFF, // Pitch：低字节→高字节（小端）
-        position_ctrl_byte,                     // 控制标志位
-        time                                    // 执行时间
-    };
-
-    uint8_t *cmd = Combine(CmdType, 0x0E, 0x00, data_payload, sizeof(data_payload));
-    if (!cmd) return RT_FALSE;
-
-
-
-    if(ret = send_data(cmd, cmd[1])){  // cmd[1]是帧长度
-
-        if(seq != RT_NULL){
-        seq[0] = cmd[8];
-        seq[1] = cmd[9];
+    /* 2. 按帧长字段（Ver/Length 低 10 位）计算总长度并发送 */
+    if (send_data(cmd, (uint16_t)(cmd[1] | ((uint16_t)cmd[2] << 8))))
+    {
+        ret = true;
+        if (seq_out != RT_NULL)
+        {
+            /* 3. 把帧中的序列号回填给调用方 */
+            seq_out[0] = cmd[8];
+            seq_out[1] = cmd[9];
         }
-        rt_free(cmd);
     }
+    rt_free(cmd); /* 4. 释放合成时申请的内存 */
     return ret;
-
 }

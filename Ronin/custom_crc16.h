@@ -37,6 +37,16 @@
  * crc = crc_finalize(crc);
  * \endcode
  */
+/**
+ * @file custom_crc16.h
+ * @brief CRC16 校验模块（头文件）
+ *
+ * 由 pycrc 生成，采用查表法实现，算法参数：
+ *  宽度 16、多项式 0x8005、初始值 0xc55c、输入/输出反射、异或输出 0x0000。
+ * 用于 DJI RS 协议帧头 CRC16 字段校验。
+ *
+ * 使用方法：crc16_init() -> crc16_update()（可多次）-> crc16_finalize()。
+ */
 #ifndef CUSTOM_CRC16_H
 #define CUSTOM_CRC16_H
 
