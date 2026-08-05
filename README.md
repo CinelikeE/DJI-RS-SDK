@@ -7,14 +7,6 @@
 
 在 RT-Thread OS 上控制大疆 RS稳定器的 DJI RS SDK 源代码（初代如影S不行），用 C 重新实现了参考项目 [ConstantRobotics/DJIR_SDK](https://github.com/ConstantRobotics/DJIR_SDK)（C++ 实现）。
 
-当前代码已经具备完整的收发解析链路：
-
-- CAN 收发：发送 0x223、接收 0x222，长帧自动按 8 字节拆分/拼接；
-- 协议帧处理：组帧、CRC16/CRC32 校验、状态机解析；
-- 应答机制：按序列号 + 命令集 + 命令 ID 匹配应答，支持超时；
-- 推送回调：参数推送（2.3.4.9）与校准状态推送（2.3.4.17）；
-- 业务封装：云台命令集（2.3.4）与相机命令集（2.3.5）常用命令；
-- 示例线程：Yaw 轴 ±120° 往返运动并打印姿态角。
 
 ## 版本说明 Version
 
@@ -102,9 +94,4 @@ void user_task(void *param)
 - **推送回调**：`msg` 指向解析线程内部静态缓冲，回调里需要保留数据请立即拷贝；
 - **返回值**：返回 `uint8_t` 的接口返回云台返回码（`0x00` 成功）或本地错误码 `RS_TIMEOUT(0x03)` / `RS_ERROR(0x04)`；
 - **回环自测**：定义宏 `DJI_RS_SDK_CAN_LOOPBACK` 可把 CAN 配置为回环模式；
-- **固件差异**：不同机型/固件版本支持的取值范围可能不同，最终以云台返回码和 2.3.4.4 限位设置为准。
-
-## 参考资料 References
-
-- [ConstantRobotics/DJIR_SDK](https://github.com/ConstantRobotics/DJIR_SDK) —— 官方 C++ 参考实现
-- 大疆《DJI R SDK 协议及使用接口》（CHS v2.5）
+- **固件差异**：不同机型/固件版本支持的取值范围可能不同，最终以云台返回码和文档 2.3.4.4 限位设置为准。
